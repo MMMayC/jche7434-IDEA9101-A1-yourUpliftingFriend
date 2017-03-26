@@ -18,17 +18,19 @@ const int buttonAlarmPin = 6;
 //vibration sensor to 0
 const int vibrationPin = 0;
 
-//variable for reading the button status
-int alarmYet = LOW;
+//variables for snooze mode
 int alarmOff = LOW;
 int alarmState = HIGH;      // the current state of the output pin
+int gotUp = LOW;
+
+//variable for reading the button status
 int alarmReading;           // the current reading from the input pin
 int alarmPrevious = LOW;  
 
+//set up the alarm and snooze time
 int alarmH = 7;
 int alarmM = 30;
 int snoozeGap = 1;
-int gotUp = LOW;
 
 int buzzerState = LOW;
 
@@ -50,6 +52,7 @@ void setup() {
 }
 
 void loop() {
+  
     digitalClockDisplay();
 
     // ring the alarm when it's time
@@ -89,9 +92,9 @@ void loop() {
       //Serial.println("track vibration");
       trackVibration();
     }
-
+    //check if the user got up by the number of vibration detected
     if(gotUp == LOW && hour() == alarmH && minute() == alarmM - snoozeGap && second() == 55){
-      Serial.println(countVibration);
+      //Serial.println(countVibration);
       if(countVibration > 500) {
         gotUp = HIGH;
         lcd.setCursor(0, 1);
@@ -102,11 +105,12 @@ void loop() {
           alarmOff = LOW;
           alarmState = HIGH;
       }
-      Serial.println("Got up?");
-      Serial.println(gotUp);
+      //Serial.println("Got up?");
+      //Serial.println(gotUp);
     }
 }
 
+//display time on lcd screen
 void digitalClockDisplay(){
   if(hour()<=9){
     lcd.setCursor(0, 0);
@@ -151,6 +155,8 @@ void digitalClockDisplay(){
 //  lcd.print(month());
 }
 
+//track the button state for turning off alarm
+//retrieve from Arduino - Switch https://www.arduino.cc/en/tutorial/switch
 void trackAlarmState(){
   alarmReading = digitalRead(buttonAlarmPin);
   //Serial.println(alarmReading);
@@ -167,28 +173,18 @@ void trackAlarmState(){
     }
     time = millis();    
   }
-
   alarmPrevious = alarmReading;
-
 }
 
-
+// trigger the buzzer
 void activateBuzzer(){
-//    tone(buzzer, 1000); // Send 1KHz sound signal...
-//    delay(1000);        // ...for 1 sec
-//    noTone(buzzer);     // Stop sound...
-//    delay(1000);        // ...for 1sec
-      tone(buzzer, 500);
+  tone(buzzer, 500);
 }
-
 void deactivateBuzzer(){
   noTone(buzzer);
 }
 
+//calculate the number of vibration detected
 void trackVibration(){
   if(digitalRead(vibrationPin) == 0 ) countVibration ++;
-  //Serial.println("vibration pin input: ");
-  //Serial.println(digitalRead(vibrationPin));
-  //Serial.println("vibration times: ");
-  //Serial.println(countVibration);
 }
